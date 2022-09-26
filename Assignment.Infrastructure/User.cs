@@ -2,14 +2,12 @@ namespace Assignment.Infrastructure;
 
 public class User
 {
-    public int id { get; set; }
+    public int Id { get; set; }
 
-    [Required]
     public string Name { get; set; }
 
+    public string Email { get; set; }
 
-    public string email { get; set; }
-
-    public ICollection<Task> Tasks { get; set; }
+    public List<WorkItem> Tasks { get; set; }
 
 }
