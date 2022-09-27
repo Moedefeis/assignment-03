@@ -4,6 +4,13 @@ namespace Assignment.Infrastructure;
 
 public class WorkItemRepository : IWorkItemRepository
 {
+    private readonly KanbanContext _context;
+
+    public WorkItemRepository(KanbanContext context)
+    {
+        _context = context;
+    }
+
     public (Response Response, int WorkItemId) Create(WorkItemCreateDTO workItem)
     {
         throw new NotImplementedException();
