@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 namespace Assignment.Infrastructure;
 
 public class KanbanContext : DbContext
-{
+{   
     public KanbanContext(DbContextOptions<KanbanContext> options) : base(options) { }
 
     public DbSet<WorkItem> WorkItems { get; set; }
