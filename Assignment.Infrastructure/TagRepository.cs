@@ -13,7 +13,26 @@ public class TagRepository : ITagRepository
 
     public (Response Response, int TagId) Create(TagCreateDTO tag)
     {
-        throw new NotImplementedException();
+        var entity = _context.Tags.FirstOrDefault(tag => tag.Id == tag.Id);
+        Response response;
+
+        if(entity == null)
+        {
+            entity = new Tag();
+
+            _context.Tags.Add(entity);
+            _context.SaveChanges();
+
+            response = Response.Created;
+        }
+        else
+        {
+            response = Response.Conflict;
+        }
+
+
+        return (response, entity.Id);
+
     }
 
     public Response Delete(int tagId, bool force = false)
