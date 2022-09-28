@@ -21,7 +21,7 @@ public class KanbanContext : DbContext
 
             entity.Property(e => e.Title).HasMaxLength(100).IsRequired(); //makes a maks length of 100
 
-            entity.Property(e => e.AssignedTo);
+            entity.Property(e => e.AssignedToId);
 
             entity.Property(e => e.Description);
 
@@ -42,6 +42,8 @@ public class KanbanContext : DbContext
 
         modelBuilder.Entity<Tag>(entity =>
         {
+            entity.Property(e => e.Id);
+
             entity.Property(e => e.Name).HasMaxLength(50); //makes a maks length of 100
 
             entity.HasIndex(e => e.Name).IsUnique(); //makes it Unique

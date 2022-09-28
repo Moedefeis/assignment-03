@@ -4,7 +4,7 @@ using Assignment.Core;
 
 namespace Assignment.Infrastructure.Tests;
 
-public class WorkItemRepositoryTests
+public class WorkItemRepositoryTests : IDisposable
 {
     private readonly KanbanContext _context;
     private readonly WorkItemRepository _repository;
@@ -18,24 +18,28 @@ public class WorkItemRepositoryTests
         var context = new KanbanContext(builder.Options);
         context.Database.EnsureCreated();
 
+        List<User> users = new()
+        {
+            new User{Id = 1, Name = "Jens", Email = "jens@gmail.com"},
+            new User{Id = 2, Name = "Bo", Email = "bo@gmail.com"}
+        };
 
         List<Tag> tags = new()
         {
-            new Tag{Id = 0, Name = "Smart", WorkItem = new List<WorkItem> 
-                {
-                    new WorkItem{Id = 0, State = State.Active, Title = "Ged"},
-                    new WorkItem{Id = 1, State = State.New, Title = "Hest", },
-                } 
-            }
+            new Tag{Id = 1, Name = "Smart"},
+            new Tag{Id = 2, Name = "Green"}
         };
 
         List<WorkItem> workItems = new()
         {
-            new WorkItem{Id = 0, State = State.Active, Title = "Ged"},
-            new WorkItem{Id = 1, State = State.New, Title = "Hest", },
-            new WorkItem{Id = 2, State = State.Removed, Title = "Får", }
+            new WorkItem{Id = 1, State = State.Active, Title = "Project", AssignedToId = 2},
+            new WorkItem{Id = 2, State = State.New, Title = "Milestone", AssignedToId = 1},
+            new WorkItem{Id = 3, State = State.Removed, Title = "Task"}
         };
-        context.Tags.Add(new Tag { Id = 0, Name = "Jens", WorkItem = workItems });
+
+        context.Users.AddRange(users);
+        context.Tags.AddRange(tags);
+        context.WorkItems.AddRange(workItems);
         context.SaveChanges();
 
         _context = context;
@@ -47,18 +51,62 @@ public class WorkItemRepositoryTests
     {
         var workItem = new WorkItemCreateDTO
         (
-            Title: "idk",
+            Title: "Bug",
             AssignedToId: null,
             Description: null,
-            Tags: new List<string> { "Smart" }
+            Tags: new HashSet<string>()
         );
-        var (response, status) = _repository.Create(workItem);
+        var (response, workItemId) = _repository.Create(workItem);
         response.Should().Be(Response.Created);
-        status.Should().Be(3);
+        workItemId.Should().Be(4);
     }
 
-    public void Dispose()
+    [Fact]
+    public void Create_given_WorkItem_returns_Conflict_with_existing_Id()
     {
-        _context.Dispose();
+        var workItem = new WorkItemCreateDTO
+        (
+            Title: "Task",
+            AssignedToId: null,
+            Description: null,
+            Tags: new HashSet<string>()
+        );
+        var (response, workItemId) = _repository.Create(workItem);
+        response.Should().Be(Response.Conflict);
+        workItemId.Should().Be(3);
     }
+
+    [Fact]
+    public void Delete_given_non_existing_Id_returns_NotFound() => _repository.Delete(4).Should().Be(Response.NotFound);
+
+    [Fact]
+    public void Delete_given_Id_of_Removed_WorkItem_returns_Conflict() => _repository.Delete(3).Should().Be(Response.Conflict);
+
+    [Fact]
+    public void Delete_given_Id_of_Active_WorkItem_sets_its_state_to_Removed()
+    {
+        _repository.Delete(1);
+        var state = _context.WorkItems.FirstOrDefault(w => w.Id == 1)!.State;
+        state.Should().Be(State.Removed);
+    }
+
+    [Fact]
+    public void Update_given_WorkItem_returns_Updated()
+    {
+        var workItem = new WorkItemUpdateDTO
+        (
+            Id: 1,
+            Title: "Bug",
+            AssignedToId: 1,
+            Description: null,
+            Tags: new HashSet<string>(),
+            State: Core.State.Active
+        );
+        _repository.Update(workItem).Should().Be(Response.Updated);
+        var entity = _context.WorkItems.FirstOrDefault(w => w.Id == 1);
+        entity!.Title.Should().Be("Bug");
+        entity!.AssignedToId.Should().Be(1);
+    }
+    
+    public void Dispose() => _context.Dispose();
 }

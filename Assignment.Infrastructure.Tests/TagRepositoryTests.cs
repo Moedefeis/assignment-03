@@ -21,7 +21,7 @@ public class TagRepositoryTests : IDisposable
             new WorkItem{Id = 0, State = State.Active, Title = "Ged"},
             new WorkItem{Id = 1, State = State.New, Title = "Hest"}
         };
-        context.Tags.Add(new Tag { Id = 0, Name = "Jens", WorkItem = workItems });
+        context.Tags.Add(new Tag { Id = 0, Name = "Jens", WorkItems = workItems });
         context.SaveChanges();
 
         _context = context;
