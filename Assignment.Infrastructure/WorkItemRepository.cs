@@ -28,13 +28,17 @@ public class WorkItemRepository : IWorkItemRepository
             }
             else
             {
+                var tags = _context.Tags.Where(t => workItem.Tags.Contains(t.Name)).ToArray();
                 entity = new WorkItem
                 {
                     Title = workItem.Title,
-                    AssignedToId = workItem.AssignedToId,
+                    User = user,
+                    UserId = user!.Id,
                     Description = workItem.Description,
                     State = State.New,
-                    Tags = new HashSet<Tag>()
+                    Tags = tags,
+                    Created = DateTime.UtcNow,
+                    StateUpdated = DateTime.UtcNow
                 };
 
                 _context.WorkItems.Add(entity);
@@ -73,10 +77,10 @@ public class WorkItemRepository : IWorkItemRepository
         
         if (w is not null)
         {
-            var u = _context.Users.FirstOrDefault(u => u.Id == w!.AssignedToId);
+            var u = _context.Users.FirstOrDefault(u => u.Id == w!.User!.Id);
             var name = u is null ? "" : u.Name;
             var tags = w.Tags.Select(t => t.Name).ToArray();
-            return new WorkItemDetailsDTO(w.Id, w.Title, w.Description!, DateTime.UtcNow, name, tags, (Core.State)w.State, DateTime.UtcNow);
+            return new WorkItemDetailsDTO(w.Id, w.Title, w.Description!, w.Created, name, tags, (Core.State)w.State, w.StateUpdated);
         }
 
         return null!;
@@ -91,13 +95,13 @@ public class WorkItemRepository : IWorkItemRepository
         StandardRead(_context.WorkItems.Where(w => w.Tags.Select(t => t.Name).Contains(tag)));
     
     public IReadOnlyCollection<WorkItemDTO> ReadByUser(int userId) =>
-        StandardRead(_context.WorkItems.Where(w => w.AssignedToId == userId));
+        StandardRead(_context.WorkItems.Where(w => w.User!.Id == userId));
     
     public IReadOnlyCollection<WorkItemDTO> ReadRemoved() => ReadByState(State.Removed);
 
     private IReadOnlyCollection<WorkItemDTO> StandardRead(IQueryable<WorkItem> workItems) =>
         (from w in workItems
-        let u = _context.Users.FirstOrDefault(u => u.Id == w!.AssignedToId)
+        let u = _context.Users.FirstOrDefault(u => u.Id == w!.User!.Id)
         orderby w.Title
         select new WorkItemDTO
         (
@@ -118,10 +122,15 @@ public class WorkItemRepository : IWorkItemRepository
             
             entity.Id = workItem.Id;
             entity.Title = workItem.Title;
-            entity.AssignedToId = workItem.AssignedToId;
+            entity.User = user;
             entity.Description = workItem.Description;
-            entity.Tags = entity.Tags;
-            entity.State = (State)workItem.State;
+            var tags = _context.Tags.Where(t => workItem.Tags.Contains(t.Name)).ToArray();
+            entity.Tags = tags;
+            if (entity.State != workItem.State)
+            {
+                entity.StateUpdated = DateTime.UtcNow;
+            }
+            entity.State = workItem.State;
             _context.SaveChanges();
             return Response.Updated;
         }

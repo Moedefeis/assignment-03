@@ -32,8 +32,8 @@ public class WorkItemRepositoryTests : IDisposable
 
         List<WorkItem> workItems = new()
         {
-            new WorkItem{Id = 1, State = State.Active, Title = "Project", AssignedToId = 2},
-            new WorkItem{Id = 2, State = State.New, Title = "Milestone", AssignedToId = 1},
+            new WorkItem{Id = 1, State = State.Active, Title = "Project", User = users[1], UserId = 2},
+            new WorkItem{Id = 2, State = State.New, Title = "Milestone", User = users[0], UserId = 1},
             new WorkItem{Id = 3, State = State.Removed, Title = "Task"}
         };
 
@@ -59,6 +59,8 @@ public class WorkItemRepositoryTests : IDisposable
         var (response, workItemId) = _repository.Create(workItem);
         response.Should().Be(Response.Created);
         workItemId.Should().Be(4);
+        _context.WorkItems.Find(4)!.Created.AddSeconds(2).Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
+
     }
 
     [Fact]
@@ -115,12 +117,13 @@ public class WorkItemRepositoryTests : IDisposable
             AssignedToId: 1,
             Description: null,
             Tags: new HashSet<string>(),
-            State: Core.State.Active
+            State: State.Closed
         );
         _repository.Update(workItem).Should().Be(Response.Updated);
         var entity = _context.WorkItems.FirstOrDefault(w => w.Id == 1);
         entity!.Title.Should().Be("Bug");
-        entity!.AssignedToId.Should().Be(1);
+        entity!.UserId.Should().Be(1);
+        _context.WorkItems.Find(1)!.StateUpdated.AddSeconds(2).Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
     }
 
     [Fact]
@@ -133,7 +136,7 @@ public class WorkItemRepositoryTests : IDisposable
             AssignedToId: 69,
             Description: null,
             Tags: new HashSet<string>(),
-            State: Core.State.Active
+            State: State.Active
         );
         _repository.Update(workItem).Should().Be(Response.BadRequest);
     }
@@ -172,7 +175,6 @@ public class WorkItemRepositoryTests : IDisposable
 
     [Fact]
     public void ReadByUser_given_non_existing_userId_returns_no_workItems() => _repository.ReadByUser(69).Should().BeEmpty();
-
 
     public void Dispose() => _context.Dispose();
 }
