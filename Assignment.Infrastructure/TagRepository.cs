@@ -11,14 +11,15 @@ public class TagRepository : ITagRepository
         this._context = context;
     }
 
-    public (Response Response, int TagId) Create(TagCreateDTO tag)
+    public (Response Response, int TagId) Create(TagCreateDTO tagDTO)
     {
-        var entity = _context.Tags.FirstOrDefault(tag => tag.Id == tag.Id);
+        var entity = _context.Tags.FirstOrDefault(tag => tag.Name == tagDTO.Name);
         Response response;
 
         if(entity == null)
         {
             entity = new Tag();
+            entity.Name = tagDTO.Name;
 
             _context.Tags.Add(entity);
             _context.SaveChanges();

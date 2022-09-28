@@ -15,36 +15,45 @@ public class KanbanContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) //this confirgure the properties in the classes
     {
-        modelBuilder.Entity<WorkItem>(entity =>
-        {
-            entity.Property(e => e.Id);
+        
+            //entity.HasKey(e => e.Id);
 
-            entity.Property(e => e.Title).HasMaxLength(100).IsRequired(); //makes a maks length of 100
+            modelBuilder.Entity<WorkItem>()
+            .Property(e => e.Title)
+            .HasMaxLength(100).IsRequired(); //makes a maks length of 100
 
-            entity.Property(e => e.AssignedTo);
+            //entity.Property(e => e.AssignedTo);
+            modelBuilder.Entity<WorkItem>()
+            .HasOne<User>(e => e.AssignedTo);
 
-            entity.Property(e => e.Description);
+            modelBuilder.Entity<WorkItem>()
+            .Property(e => e.Description);
 
-            entity.Property(e => e.State).HasConversion<string>().IsRequired();
-        });
+             modelBuilder.Entity<WorkItem>()
+             .Property(e => e.State)
+             .HasConversion<string>().IsRequired();
+        
+            
 
+            modelBuilder.Entity<User>()
+            .Property(e => e.Name)
+            .HasMaxLength(100).IsRequired(); //makes a maks length of 100
 
-        modelBuilder.Entity<User>(entity =>
-        {
-            entity.Property(e => e.Id);
+            modelBuilder.Entity<User>()
+            .Property(e => e.Email)
+            .HasMaxLength(100).IsRequired(); //makes a maks length of 100
 
-            entity.Property(e => e.Name).HasMaxLength(100).IsRequired(); //makes a maks length of 100
+            modelBuilder.Entity<User>()
+            .HasIndex(e => e.Email).IsUnique();
+        
+        
 
-            entity.Property(e => e.Email).HasMaxLength(100).IsRequired(); //makes a maks length of 100
+            modelBuilder.Entity<Tag>()
+            .Property(e => e.Name)
+            .HasMaxLength(50); //makes a maks length of 100
 
-            entity.HasIndex(e => e.Email).IsUnique();
-        });
-
-        modelBuilder.Entity<Tag>(entity =>
-        {
-            entity.Property(e => e.Name).HasMaxLength(50); //makes a maks length of 100
-
-            entity.HasIndex(e => e.Name).IsUnique(); //makes it Unique
-        });
+            modelBuilder.Entity<Tag>()
+            .HasIndex(e => e.Name)
+            .IsUnique(); //makes it Unique
     }
 }
