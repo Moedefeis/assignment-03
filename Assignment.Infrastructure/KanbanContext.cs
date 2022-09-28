@@ -24,7 +24,7 @@ public class KanbanContext : DbContext
 
             //entity.Property(e => e.AssignedTo);
             modelBuilder.Entity<WorkItem>()
-            .HasOne<User>(e => e.AssignedTo);
+            .HasOne<User>(e => e.AssignedTo); //optional AssignedTo User
 
             modelBuilder.Entity<WorkItem>()
             .Property(e => e.Description);

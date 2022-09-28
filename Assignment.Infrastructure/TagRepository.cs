@@ -38,21 +38,65 @@ public class TagRepository : ITagRepository
 
     public Response Delete(int tagId, bool force = false)
     {
-        throw new NotImplementedException();
+        var tag = _context.Tags.FirstOrDefault(tag => tag.Id == tagId);
+        Response response;  
+        if(tag == null){
+            response = Response.NotFound;
+        } else if (tag.WorkItem != null && tag.WorkItem.Any()){
+            if(force){
+            response = Response.Deleted;
+            _context.Tags.Remove(tag); //deletes from fatabase
+            } 
+            else
+            {
+                response = Response.Conflict;
+            }
+        } 
+        else
+        {
+            response = Response.Deleted;
+             _context.Tags.Remove(tag); //deletes from fatabase
+        }
+        return response;
     }
 
     public TagDTO Find(int tagId)
     {
-        throw new NotImplementedException();
+     var tag = from t in _context.Tags
+                where t.Id == tagId
+                select new TagDTO(t.Id, t.Name);
+
+        return tag.First();   
     }
 
     public IReadOnlyCollection<TagDTO> Read()
     {
-        throw new NotImplementedException();
+        var tags = from t in _context.Tags
+                    orderby t.Name
+                    select new TagDTO(t.Id, t.Name);
+
+            return tags.ToArray();
     }
 
     public Response Update(TagUpdateDTO tag)
     {
-        throw new NotImplementedException();
+        var entity = _context.Tags.Find(tag.Id);
+
+        Response response;
+
+        if(entity == null){
+            response = Response.NotFound;
+        } else if (_context.Tags.FirstOrDefault(t => t.Id != tag.Id && t.Name == tag.Name) != null)
+        {
+            response = Response.Conflict;
+        }
+        else
+        {
+            entity.Name = tag.Name;
+            _context.SaveChanges();
+            response = Response.Updated;
+        }
+
+        return response;
     }
 }
