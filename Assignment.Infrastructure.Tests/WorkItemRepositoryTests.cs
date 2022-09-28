@@ -21,21 +21,21 @@ public class WorkItemRepositoryTests
 
         List<Tag> tags = new()
         {
-            new Tag{Id = 0, Name = "Smart", WorkItem = new List<WorkItem> 
+            new Tag{Id = 4, Name = "Smart", WorkItem = new List<WorkItem> 
                 {
-                    new WorkItem{Id = 0, State = State.Active, Title = "Ged"},
-                    new WorkItem{Id = 1, State = State.New, Title = "Hest", },
+                    new WorkItem{Id = 10, State = State.Active, Title = "Ged"},
+                    new WorkItem{Id = 12, State = State.New, Title = "Hest", },
                 } 
             }
         };
 
         List<WorkItem> workItems = new()
         {
-            new WorkItem{Id = 0, State = State.Active, Title = "Ged"},
-            new WorkItem{Id = 1, State = State.New, Title = "Hest", },
-            new WorkItem{Id = 2, State = State.Removed, Title = "Får", }
+            new WorkItem{Id = 5, State = State.Active, Title = "Ged"},
+            new WorkItem{Id = 6, State = State.New, Title = "Hest", },
+            new WorkItem{Id = 7, State = State.Removed, Title = "Fï¿½r", }
         };
-        context.Tags.Add(new Tag { Id = 0, Name = "Jens", WorkItem = workItems });
+        context.Tags.Add(new Tag { Id = 8, Name = "Jens", WorkItem = workItems });
         context.SaveChanges();
 
         _context = context;

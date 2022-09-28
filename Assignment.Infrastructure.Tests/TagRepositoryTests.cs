@@ -11,29 +11,34 @@ public class TagRepositoryTests : IDisposable
 
 	public TagRepositoryTests()
 	{
-        var connection = new SqliteConnection("Filename=:memory:");
+        var connection = new SqliteConnection("DataSource=:memory:");
         connection.Open();
+        
         var builder = new DbContextOptionsBuilder<KanbanContext>();
         builder.UseSqlite(connection);
-        var context = new KanbanContext(builder.Options);
-        context.Database.EnsureCreated();
+
+        // var context = new KanbanContext(builder.Options);
+        _context = new KanbanContext(builder.Options);
+        _context.Database.EnsureCreated();
         List<WorkItem> items = new();
 
         List<WorkItem> workItems = new()
         {
-            new WorkItem{Id = 0, State = State.Active, Title = "Ged"},
-            new WorkItem{Id = 1, State = State.New, Title = "Hest"}
+            new WorkItem{State = State.Active, AssignedTo = new User{Name = "Lars", Email = "mail", Tasks = items}, Title = "Ged"},
+            //new WorkItem{Id = 1, State = State.New, Title = "Hest"}
         };
-        context.Tags.Add(new Tag { Id = 0, Name = "Jens", WorkItem = workItems });
-        context.SaveChanges();
+         _context.Tags.AddRange(new Tag {Name = "Jens", WorkItem = workItems });
+        _context.SaveChanges();
 
-        _context = context;
+        // _context = context;
         _repository = new TagRepository(_context);
     }
 
 	public void Dispose()
 	{
+        _context.Database.EnsureDeleted();
         _context.Dispose();
+
 	}
 
 
