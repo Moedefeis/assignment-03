@@ -1,4 +1,6 @@
 using Assignment.Core;
+using System.Runtime.CompilerServices;
+using System.Xml.Linq;
 
 namespace Assignment.Infrastructure;
 
@@ -18,18 +20,27 @@ public class WorkItemRepository : IWorkItemRepository
 
         if (entity is null)
         {
-            entity = new WorkItem
-            {
-                Title = workItem.Title,
-                AssignedToId = workItem.AssignedToId,
-                Description = workItem.Description,
-                State = State.New,
-                Tags = new HashSet<Tag>()
-            };
+            var user = _context.Users.Find(workItem.AssignedToId);
 
-            _context.WorkItems.Add(entity);
-            _context.SaveChanges();
-            response = Response.Created;
+            if (user is null && workItem.AssignedToId is not null) 
+            { 
+                return (Response.BadRequest, (int)workItem.AssignedToId); 
+            }
+            else
+            {
+                entity = new WorkItem
+                {
+                    Title = workItem.Title,
+                    AssignedToId = workItem.AssignedToId,
+                    Description = workItem.Description,
+                    State = State.New,
+                    Tags = new HashSet<Tag>()
+                };
+
+                _context.WorkItems.Add(entity);
+                _context.SaveChanges();
+                response = Response.Created;
+            }
         }
         else response = Response.Conflict;
 
@@ -60,51 +71,51 @@ public class WorkItemRepository : IWorkItemRepository
     {
         var w = _context.WorkItems.Find(workItemId);
         
-        if (w is null) return null!;
-        else
+        if (w is not null)
         {
             var u = _context.Users.FirstOrDefault(u => u.Id == w!.AssignedToId);
             var name = u is null ? "" : u.Name;
             var tags = w.Tags.Select(t => t.Name).ToArray();
             return new WorkItemDetailsDTO(w.Id, w.Title, w.Description!, DateTime.UtcNow, name, tags, (Core.State)w.State, DateTime.UtcNow);
         }
+
+        return null!;
     }
 
-    public IReadOnlyCollection<WorkItemDTO> Read()
-    {
-        throw new NotImplementedException();
-    }
+    public IReadOnlyCollection<WorkItemDTO> Read() => StandardRead(_context.WorkItems);
 
-    public IReadOnlyCollection<WorkItemDTO> ReadByState(State state)
-    {
-        throw new NotImplementedException();
-    }
+    public IReadOnlyCollection<WorkItemDTO> ReadByState(State state) =>
+        StandardRead(_context.WorkItems.Where(w => w.State == state));
 
-    public IReadOnlyCollection<WorkItemDTO> ReadByState(Core.State state)
-    {
-        throw new NotImplementedException();
-    }
+    public IReadOnlyCollection<WorkItemDTO> ReadByTag(string tag) =>
+        StandardRead(_context.WorkItems.Where(w => w.Tags.Select(t => t.Name).Contains(tag)));
+    
+    public IReadOnlyCollection<WorkItemDTO> ReadByUser(int userId) =>
+        StandardRead(_context.WorkItems.Where(w => w.AssignedToId == userId));
+    
+    public IReadOnlyCollection<WorkItemDTO> ReadRemoved() => ReadByState(State.Removed);
 
-    public IReadOnlyCollection<WorkItemDTO> ReadByTag(string tag)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IReadOnlyCollection<WorkItemDTO> ReadByUser(int userId)
-    {
-        throw new NotImplementedException();
-    }
-
-    public IReadOnlyCollection<WorkItemDTO> ReadRemoved()
-    {
-        throw new NotImplementedException();
-    }
+    private IReadOnlyCollection<WorkItemDTO> StandardRead(IQueryable<WorkItem> workItems) =>
+        (from w in workItems
+        let u = _context.Users.FirstOrDefault(u => u.Id == w!.AssignedToId)
+        orderby w.Title
+        select new WorkItemDTO
+        (
+            w.Id,
+            w.Title,
+            u == null ? "" : u.Name,
+            w.Tags.Select(t => t.Name).ToArray(),
+            w.State
+        )).ToArray();
 
     public Response Update(WorkItemUpdateDTO workItem)
     {
         var entity = _context.WorkItems.Find(workItem.Id);
         if (entity is not null)
         {
+            var user = _context.Users.Find(workItem.AssignedToId);
+            if (user is null) return Response.BadRequest;
+            
             entity.Id = workItem.Id;
             entity.Title = workItem.Title;
             entity.AssignedToId = workItem.AssignedToId;

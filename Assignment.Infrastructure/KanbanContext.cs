@@ -9,9 +9,9 @@ public class KanbanContext : DbContext
 {   
     public KanbanContext(DbContextOptions<KanbanContext> options) : base(options) { }
 
-    public DbSet<WorkItem> WorkItems { get; set; }
-    public DbSet<User> Users { get; set; }
-    public DbSet<Tag> Tags { get; set; }
+    public DbSet<WorkItem> WorkItems => Set<WorkItem>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Tag> Tags => Set<Tag>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) //this confirgure the properties in the classes
     {

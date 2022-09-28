@@ -52,7 +52,7 @@ public class WorkItemRepositoryTests : IDisposable
         var workItem = new WorkItemCreateDTO
         (
             Title: "Bug",
-            AssignedToId: null,
+            AssignedToId: 2,
             Description: null,
             Tags: new HashSet<string>()
         );
@@ -67,13 +67,28 @@ public class WorkItemRepositoryTests : IDisposable
         var workItem = new WorkItemCreateDTO
         (
             Title: "Task",
-            AssignedToId: null,
+            AssignedToId: 1,
             Description: null,
             Tags: new HashSet<string>()
         );
         var (response, workItemId) = _repository.Create(workItem);
         response.Should().Be(Response.Conflict);
         workItemId.Should().Be(3);
+    }
+
+    [Fact]
+    public void Create_given_WorkItem_with_non_existing_userId_returns_BadRequest_with_given_userId()
+    {
+        var workItem = new WorkItemCreateDTO
+        (
+            Title: "Bug",
+            AssignedToId: 69,
+            Description: null,
+            Tags: new HashSet<string>()
+        );
+        var (response, workItemId) = _repository.Create(workItem);
+        response.Should().Be(Response.BadRequest);
+        workItemId.Should().Be(69);
     }
 
     [Fact]
@@ -107,6 +122,57 @@ public class WorkItemRepositoryTests : IDisposable
         entity!.Title.Should().Be("Bug");
         entity!.AssignedToId.Should().Be(1);
     }
-    
+
+    [Fact]
+    public void Update_given_WorkItem_with_non_existing_userId_returns_BadRequest()
+    {
+        var workItem = new WorkItemUpdateDTO
+        (
+            Id: 1,
+            Title: "Bug",
+            AssignedToId: 69,
+            Description: null,
+            Tags: new HashSet<string>(),
+            State: Core.State.Active
+        );
+        _repository.Update(workItem).Should().Be(Response.BadRequest);
+    }
+
+    [Fact]
+    public void Read_returns_all_workItems()
+    {
+        var workItems = new WorkItemDTO[]
+        {
+            new WorkItemDTO(2, "Milestone", "Jens", new HashSet<string>(), State.New),
+            new WorkItemDTO(1, "Project", "Bo", new HashSet<string>(), State.Active),
+            new WorkItemDTO(3, "Task", "", new HashSet<string>(), State.Removed),
+        };
+        _repository.Read().Should().BeEquivalentTo(workItems);
+    }
+
+    [Fact]
+    public void ReadRemoved_returns_all_Removed_workItems()
+    {
+        var workItems = new WorkItemDTO[]
+        {
+            new WorkItemDTO(3, "Task", "", new HashSet<string>(), State.Removed),
+        };
+        _repository.ReadRemoved().Should().BeEquivalentTo(workItems);
+    }
+
+    [Fact]
+    public void ReadByUser_given_userId_returns_workItems()
+    {
+        var workItems = new WorkItemDTO[]
+        {
+            new WorkItemDTO(1, "Project", "Bo", new HashSet<string>(), State.Active),
+        };
+        _repository.ReadByUser(2).Should().BeEquivalentTo(workItems);
+    }
+
+    [Fact]
+    public void ReadByUser_given_non_existing_userId_returns_no_workItems() => _repository.ReadByUser(69).Should().BeEmpty();
+
+
     public void Dispose() => _context.Dispose();
 }
