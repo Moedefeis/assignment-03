@@ -19,7 +19,7 @@ public class KanbanContext : DbContext
         {
             entity.Property(e => e.Title).HasMaxLength(100).IsRequired(); //makes a max length of 100
 
-            //entity.HasOne(e => e.User).WithMany(e => e.WorkItems);
+            entity.HasOne(e => e.AssignedTo);
 
             entity.Property(e => e.Description);
 

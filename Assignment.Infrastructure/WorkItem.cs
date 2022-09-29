@@ -6,9 +6,9 @@ public class WorkItem
 
     public string Title { get; set; } = null!;
 
-    public User? User { get; set; } //it is optional because it can be nullable
+    public User? AssignedTo { get; set; } //it is optional because it can be nullable
 
-    public int? UserId { get; set; } //it is optional because it can be nullable
+    public int? AssignedToId { get; set; } //it is optional because it can be nullable
 
     public string? Description { get; set; }
 

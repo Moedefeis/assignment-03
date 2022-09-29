@@ -32,8 +32,8 @@ public class WorkItemRepository : IWorkItemRepository
                 entity = new WorkItem
                 {
                     Title = workItem.Title,
-                    User = user,
-                    UserId = user!.Id,
+                    AssignedTo = user,
+                    AssignedToId = user!.Id,
                     Description = workItem.Description,
                     State = State.New,
                     Tags = tags,
@@ -77,7 +77,7 @@ public class WorkItemRepository : IWorkItemRepository
         
         if (w is not null)
         {
-            var u = _context.Users.FirstOrDefault(u => u.Id == w!.User!.Id);
+            var u = _context.Users.FirstOrDefault(u => u.Id == w!.AssignedTo!.Id);
             var name = u is null ? "" : u.Name;
             var tags = w.Tags.Select(t => t.Name).ToArray();
             return new WorkItemDetailsDTO(w.Id, w.Title, w.Description!, w.Created, name, tags, (Core.State)w.State, w.StateUpdated);
@@ -95,13 +95,13 @@ public class WorkItemRepository : IWorkItemRepository
         StandardRead(_context.WorkItems.Where(w => w.Tags.Select(t => t.Name).Contains(tag)));
     
     public IReadOnlyCollection<WorkItemDTO> ReadByUser(int userId) =>
-        StandardRead(_context.WorkItems.Where(w => w.User!.Id == userId));
+        StandardRead(_context.WorkItems.Where(w => w.AssignedTo!.Id == userId));
     
     public IReadOnlyCollection<WorkItemDTO> ReadRemoved() => ReadByState(State.Removed);
 
     private IReadOnlyCollection<WorkItemDTO> StandardRead(IQueryable<WorkItem> workItems) =>
         (from w in workItems
-        let u = _context.Users.FirstOrDefault(u => u.Id == w!.User!.Id)
+        let u = _context.Users.FirstOrDefault(u => u.Id == w!.AssignedTo!.Id)
         orderby w.Title
         select new WorkItemDTO
         (
@@ -122,7 +122,7 @@ public class WorkItemRepository : IWorkItemRepository
             
             entity.Id = workItem.Id;
             entity.Title = workItem.Title;
-            entity.User = user;
+            entity.AssignedTo = user;
             entity.Description = workItem.Description;
             var tags = _context.Tags.Where(t => workItem.Tags.Contains(t.Name)).ToArray();
             entity.Tags = tags;

@@ -32,8 +32,8 @@ public class WorkItemRepositoryTests : IDisposable
 
         List<WorkItem> workItems = new()
         {
-            new WorkItem{Id = 1, State = State.Active, Title = "Project", User = users[1], UserId = 2},
-            new WorkItem{Id = 2, State = State.New, Title = "Milestone", User = users[0], UserId = 1},
+            new WorkItem{Id = 1, State = State.Active, Title = "Project", AssignedTo = users[1], AssignedToId = 2},
+            new WorkItem{Id = 2, State = State.New, Title = "Milestone", AssignedTo = users[0], AssignedToId = 1},
             new WorkItem{Id = 3, State = State.Removed, Title = "Task"}
         };
 
@@ -122,7 +122,7 @@ public class WorkItemRepositoryTests : IDisposable
         _repository.Update(workItem).Should().Be(Response.Updated);
         var entity = _context.WorkItems.FirstOrDefault(w => w.Id == 1);
         entity!.Title.Should().Be("Bug");
-        entity!.UserId.Should().Be(1);
+        entity!.AssignedToId.Should().Be(1);
         _context.WorkItems.Find(1)!.StateUpdated.AddSeconds(2).Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromSeconds(5));
     }
 
