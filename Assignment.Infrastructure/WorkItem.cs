@@ -1,5 +1,4 @@
 namespace Assignment.Infrastructure;
-
 public class WorkItem
 {
     public int Id { get; set; }

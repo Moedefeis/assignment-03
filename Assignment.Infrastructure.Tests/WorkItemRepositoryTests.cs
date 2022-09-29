@@ -1,4 +1,4 @@
-using Microsoft.Data.Sqlite;
+/* using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Assignment.Core;
 
@@ -28,6 +28,7 @@ public class WorkItemRepositoryTests : IDisposable
         {
             new Tag{Id = 1, Name = "Smart"},
             new Tag{Id = 2, Name = "Green"}
+
         };
 
         List<WorkItem> workItems = new()
@@ -40,6 +41,7 @@ public class WorkItemRepositoryTests : IDisposable
         context.Users.AddRange(users);
         context.Tags.AddRange(tags);
         context.WorkItems.AddRange(workItems);
+
         context.SaveChanges();
 
         _context = context;
@@ -178,3 +180,4 @@ public class WorkItemRepositoryTests : IDisposable
 
     public void Dispose() => _context.Dispose();
 }
+ */
