@@ -43,6 +43,7 @@ public class TagRepositoryTests : IDisposable
         context.Users.AddRange(users);
         context.Tags.AddRange(tags);
         context.WorkItems.AddRange(workItems);
+
         context.SaveChanges();
 
         _context = context;

@@ -9,51 +9,43 @@ public class KanbanContext : DbContext
 {   
     public KanbanContext(DbContextOptions<KanbanContext> options) : base(options) { }
 
-    public DbSet<WorkItem> WorkItems { get; set; }
-    public DbSet<User> Users { get; set; }
-    public DbSet<Tag> Tags { get; set; }
+    public DbSet<WorkItem> WorkItems => Set<WorkItem>();
+    public DbSet<User> Users => Set<User>();
+    public DbSet<Tag> Tags => Set<Tag>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder) //this confirgure the properties in the classes
     {
-        
-            //entity.HasKey(e => e.Id);
+        modelBuilder.Entity<WorkItem>(entity =>
+        {
+            entity.Property(e => e.Title).HasMaxLength(100).IsRequired(); //makes a max length of 100
 
-            modelBuilder.Entity<WorkItem>()
-            .Property(e => e.Title)
-            .HasMaxLength(100).IsRequired(); //makes a maks length of 100
+            entity.HasOne(e => e.AssignedTo);
 
-            //entity.Property(e => e.AssignedTo);
-            modelBuilder.Entity<WorkItem>()
-            .HasOne<User>(e => e.AssignedTo); //optional AssignedTo User
+            entity.Property(e => e.Description);
 
-            modelBuilder.Entity<WorkItem>()
-            .Property(e => e.Description);
+            entity.Property(e => e.State).HasConversion<string>().IsRequired();
 
-             modelBuilder.Entity<WorkItem>()
-             .Property(e => e.State)
-             .HasConversion<string>().IsRequired();
-        
-            
+            entity.Property(e => e.Created);
 
-            modelBuilder.Entity<User>()
-            .Property(e => e.Name)
-            .HasMaxLength(100).IsRequired(); //makes a maks length of 100
+            entity.Property(e => e.StateUpdated);
+        });
 
-            modelBuilder.Entity<User>()
-            .Property(e => e.Email)
-            .HasMaxLength(100).IsRequired(); //makes a maks length of 100
 
-            modelBuilder.Entity<User>()
-            .HasIndex(e => e.Email).IsUnique();
-        
-        
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(100).IsRequired(); //makes a max length of 100
 
-            modelBuilder.Entity<Tag>()
-            .Property(e => e.Name)
-            .HasMaxLength(50); //makes a maks length of 100
+            entity.Property(e => e.Email).HasMaxLength(100).IsRequired(); //makes a max length of 100
 
-            modelBuilder.Entity<Tag>()
-            .HasIndex(e => e.Name)
-            .IsUnique(); //makes it Unique
+            entity.HasIndex(e => e.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<Tag>(entity =>
+        {
+            entity.Property(e => e.Name).HasMaxLength(50); //makes a max length of 50
+
+            entity.HasIndex(e => e.Name).IsUnique(); //makes it Unique
+        });
+
     }
 }
