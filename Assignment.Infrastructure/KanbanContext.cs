@@ -46,6 +46,5 @@ public class KanbanContext : DbContext
 
             entity.HasIndex(e => e.Name).IsUnique(); //makes it Unique
         });
-
     }
 }

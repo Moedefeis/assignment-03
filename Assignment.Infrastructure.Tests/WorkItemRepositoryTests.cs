@@ -1,4 +1,4 @@
-/* using Microsoft.Data.Sqlite;
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Assignment.Core;
 
@@ -180,4 +180,3 @@ public class WorkItemRepositoryTests : IDisposable
 
     public void Dispose() => _context.Dispose();
 }
- */

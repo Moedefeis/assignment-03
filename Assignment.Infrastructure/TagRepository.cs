@@ -42,7 +42,7 @@ public class TagRepository : ITagRepository
         Response response;  
         if(tag == null){
             response = Response.NotFound;
-        } else if (tag.WorkItem != null && tag.WorkItem.Any()){
+        } else if (tag.WorkItems != null && tag.WorkItems.Any()){
             if(force){
             response = Response.Deleted;
             _context.Tags.Remove(tag); //deletes from fatabase
